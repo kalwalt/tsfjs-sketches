@@ -1,0 +1,68 @@
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+
+<body>
+    <canvas id="cv"></canvas>
+    <script>
+        class Heart {
+            variableNames = ["X"];
+            outputShape;
+            userCode;
+    
+            constructor(shape) {
+                this.outputShape = shape;
+                const [h, w] = shape;
+                this.userCode = `
+          void main() {
+            ivec3 coords = getOutputCoords();
+            
+    
+            float x = float(-coords[0] + ${h} / 2);
+            float y = float(-coords[1] + ${w} / 2);
+            float a = 100.0;
+    
+            float x2 = x * x ;
+            float y2 = y * y ;
+    
+            float x3 = x2 * x;
+            float y3 = y2 * y;
+            
+    
+            // float val = pow(x2 + y2 - 8120.0, 3.0);
+            // float val = (x2 + 9.0*y2/4.0 - 1000.0, 3.0) * (x2 + 9.0*y2/4.0 - 1000.0, 3.0) * (x2 + 9.0*y2/4.0 - 1000.0, 3.0);
+            float val = pow(x2 + y2 - a*a, 3.0) - x3*y2*a;
+            // float val = x2 + y2 - 1000000.0;
+            int r = coords[0];
+            int c = coords[1];
+            int d = coords[2];
+    
+            if(val < 0.0) {
+                setOutput(255.0);
+                // setOutput(float((getX(r, c, 0) + getX(r, c, 1) + getX(r, c, 2)) / 3.0));
+                // if(coords[2] == 0) {
+                //     setOutput(float((getX(r, c, d) + getX(r, c, d + 1) + getX(r, c, d + 2)) / 3.0));
+                // } else if(coords[2] == 1) {
+                //     setOutput(float((getX(r, c, d - 1) + getX(r, c, d) + getX(r, c, d + 1)) / 3.0));
+                // } else {
+                //     setOutput(float((getX(r, c, d) + getX(r, c, d - 1) + getX(r, c, d - 2)) / 3.0));
+                // }
+            } else {
+    
+                setOutput(getX(r, c, d));
+            }
+    
+          }
+        `;
+            }
+        }
+    
+        const tensor = tf.ones([400, 300, 3]).cast('int32');
+        console.log(tensor.shape);
+        /////////////////
+        const prog = new Heart(tensor.shape);
+        const drawn = tf.backend().compileAndRun(prog, [tensor])
+        console.log(drawn);
+        const canvas = document.getElementById('cv')
+        tf.browser.toPixels(drawn, canvas);
+    </script>
+    
+</body>
